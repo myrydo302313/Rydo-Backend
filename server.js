@@ -9,8 +9,8 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-  // origin: "https://www.evotto.in",
-  origin: "http://localhost:5176",
+  origin: "https://rydo.vercel.app/",
+  // origin: "http://localhost:5176",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
 };
