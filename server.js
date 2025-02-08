@@ -8,9 +8,16 @@ const authRoute = require("./routes/authRoutes");
 dotenv.config();
 const app = express();
 
+const allowedOrigins = ["http://localhost:5176", "https://rydo.vercel.app"];
+
 const corsOptions = {
-  origin: "https://rydo.vercel.app/",
-  // origin: "http://localhost:5176",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
 };
