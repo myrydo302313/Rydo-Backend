@@ -61,8 +61,17 @@ const login = async (req, res) => {
 const user = async (req, res) => {
   try {
     const userData = req.user;
-    console.log(userData);
     return res.status(200).json({ userData });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const captain = async (req, res) => {
+  try {
+    const captainData = req.user;
+
+    return res.status(200).json({ captainData });
   } catch (e) {
     console.log(e);
   }
@@ -132,4 +141,11 @@ const captainLogin = async (req, res) => {
   }
 };
 
-module.exports = { register, login, user, captainRegister, captainLogin };
+module.exports = {
+  register,
+  login,
+  user,
+  captain,
+  captainRegister,
+  captainLogin,
+};

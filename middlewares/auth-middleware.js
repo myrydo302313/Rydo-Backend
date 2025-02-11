@@ -1,18 +1,17 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/user-model');
+const jwt = require("jsonwebtoken");
+const User = require("../models/user-model");
+const Captain = require("../models/captain-model"); // Import Captain model
 
 const authMiddleware = async (req, res, next) => {
     // Get token from headers
-    const token = req.header('Authorization');
-
-    console.log('ye aya ',process.env.JWT_SECRET_KEY)
+    const token = req.header("Authorization");
 
     if (!token) {
-        return res.status(401).json({ message: "Unauthorized HTTP, Token not provided" });
+        return res.status(401).json({ message: "Unauthorized, Token not provided" });
     }
 
     // Properly extract the token from "Bearer <token>"
-    const jwtToken = token.split(' ')[1]; // This will remove the 'Bearer' part and leave only the token
+    const jwtToken = token.split(" ")[1]; // This removes 'Bearer' and keeps the actual token
 
     if (!jwtToken) {
         return res.status(401).json({ message: "Unauthorized, Invalid token format" });
@@ -22,21 +21,31 @@ const authMiddleware = async (req, res, next) => {
         // Verify the token
         const isVerified = jwt.verify(jwtToken, process.env.JWT_SECRET_KEY);
 
-        // Fetch user data from the database, excluding the password
-        const userData = await User.findOne({ email: isVerified.email }).select('-password');
+        let userData;
+        let userType;
+
+        // Check if the request is for a user or a captain
+        if (req.path.includes("/captain")) {
+            userData = await Captain.findOne({ email: isVerified.email }).select("-password");
+            userType = "captain";
+        } else {
+            userData = await User.findOne({ email: isVerified.email }).select("-password");
+            userType = "user";
+        }
 
         if (!userData) {
-            return res.status(404).json({ message: "User not found" });
+            return res.status(404).json({ message: `${userType} not found` });
         }
 
         // Attach user data and token to request
         req.user = userData;
         req.token = token;
         req.userID = userData._id;
+        req.userType = userType; // Helps identify whether it's a user or captain
 
         next();
     } catch (error) {
-        console.error('Error in authMiddleware:', error);
+        console.error("Error in authMiddleware:", error);
         return res.status(401).json({ message: "Unauthorized, Invalid token" });
     }
 };
