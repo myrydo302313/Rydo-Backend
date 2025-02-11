@@ -40,12 +40,12 @@ const login = async (req, res) => {
     const userExists = await User.findOne({ email });
 
     if (!userExists) {
-      return res.status(400).send("User doesn't exist");
+      return res.status(400).json({ message: "User doesn't exist" });
     }
 
     const isMatch = await userExists.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json("Wrong Password");
+      return res.status(400).json({ message: "Wrong Password" });
     }
 
     res.status(200).json({
@@ -54,7 +54,7 @@ const login = async (req, res) => {
       userId: userExists._id.toString(),
     });
   } catch (e) {
-    res.status(500).json("Internal server error");
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -123,12 +123,12 @@ const captainLogin = async (req, res) => {
     const captainExists = await Captain.findOne({ email });
 
     if (!captainExists) {
-      return res.status(400).send("Captain doesn't exist");
+      return res.status(400).send({ message: "Email already exists" });
     }
 
     const isMatch = await captainExists.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json("Wrong Password");
+      return res.status(400).json({ message: "Incorrect Password" });
     }
 
     res.status(200).json({
