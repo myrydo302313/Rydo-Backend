@@ -9,7 +9,7 @@ const mapRoutes = require("./routes/mapRoutes");
 dotenv.config();
 const app = express();
 
-const allowedOrigins = ["http://localhost:5175", "https://rydo.vercel.app"];
+const allowedOrigins = ["http://localhost:5173", "https://rydo.vercel.app"];
 
 const corsOptions = {
   origin: function (origin, callback) {
