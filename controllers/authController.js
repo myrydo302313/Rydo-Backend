@@ -123,7 +123,7 @@ const captainLogin = async (req, res) => {
     const captainExists = await Captain.findOne({ email });
 
     if (!captainExists) {
-      return res.status(400).send({ message: "Email already exists" });
+      return res.status(400).send({ message: "Email does not exists" });
     }
 
     const isMatch = await captainExists.comparePassword(password);
