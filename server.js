@@ -32,7 +32,7 @@ const app = express();
 const corsOptions = {
   // origin: "https://www.evotto.in",
   // origin: "http://localhost:5173",
-  origin: "http://rydo.vercel.app",
+  origin: "https://rydo.vercel.app",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
 };
