@@ -13,22 +13,29 @@ const rideRoutes = require("./routes/rideRoutes");
 dotenv.config();
 const app = express();
 
-const allowedOrigins = ["http://localhost:5173", "http://rydo.vercel.app"];
+// const allowedOrigins = ["http://localhost:5173", "http://rydo.vercel.app"];
+
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//   credentials: true,
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   preflightContinue: false,
+// };
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  // origin: "https://www.evotto.in",
+  // origin: "http://localhost:5173",
+  origin: "http://rydo.vercel.app",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-  preflightContinue: false,
 };
-
 
 app.use(cors(corsOptions));
 app.use(express.json());
