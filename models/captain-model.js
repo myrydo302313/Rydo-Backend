@@ -52,7 +52,7 @@ captainSchema.methods.generateToken = async function () {
   try {
     return jwt.sign(
       {
-        userId: this._id.toString(),
+        captainId: this._id.toString(),
         name: this.name,
         email: this.email,
         vehicleType: this.vehicleType,

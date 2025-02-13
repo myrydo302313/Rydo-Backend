@@ -41,7 +41,7 @@ const authMiddleware = async (req, res, next) => {
         req.user = userData;
         req.token = token;
         req.userID = userData._id;
-        req.userType = userType; // Helps identify whether it's a user or captain
+        req.userType = userType; 
 
         next();
     } catch (error) {

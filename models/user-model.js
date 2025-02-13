@@ -45,7 +45,6 @@ userSchema.methods.generateToken = async function () {
         userId: this._id.toString(),
         name: this.name,
         email: this.email,
-        role: this.role,
       },
       process.env.JWT_SECRET_KEY,
       {
