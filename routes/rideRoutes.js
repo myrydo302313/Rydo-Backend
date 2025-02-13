@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const crypto = require("crypto");
 const { body, query } = require('express-validator');
 const rideController = require('../controllers/rideController');

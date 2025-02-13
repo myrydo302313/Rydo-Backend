@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const connectDB = require("./config/db");
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const crypto = require("crypto");
 
 const authRoute = require("./routes/authRoutes");

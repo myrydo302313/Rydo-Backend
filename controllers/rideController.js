@@ -4,7 +4,7 @@ const mapService = require('../services/maps.service');
 // const { sendMessageToSocketId } = require('../socket');
 const rideModel = require('../models/ride-model');
 const userModel=require('../models/user-model')
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const crypto = require("crypto");
 
 
