@@ -71,6 +71,7 @@ module.exports.confirmRide = async (req, res) => {
 
     const { rideId , captainId} = req.body;
 
+
     try {
         const ride = await rideService.confirmRide({ rideId, captainId });
 
@@ -78,8 +79,6 @@ module.exports.confirmRide = async (req, res) => {
             event: 'ride-confirmed',
             data: ride
         })
-
-        console.log('ye h ride',ride)
 
         return res.status(200).json(ride);
     } catch (err) {
