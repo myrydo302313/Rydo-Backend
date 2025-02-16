@@ -20,6 +20,18 @@ const captainSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  socketId: {
+    type: String,
+  },
+  status: {
+    type: String,
+    enum: ["active", "inactive"],
+    default: "inactive",
+  },
+  vehicleName:{
+    type: String,
+
+  },
   vehicleType: {
     type: String,
     enum: ["auto", "car", "two-wheeler"],
@@ -29,7 +41,15 @@ const captainSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-  }
+  },
+  location: {
+    ltd: {
+      type: Number,
+    },
+    lng: {
+      type: Number,
+    },
+  },
 });
 
 captainSchema.pre("save", async function (next) {

@@ -19,7 +19,10 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-  }
+  },
+  socketId: {
+    type: String,
+  },
 });
 
 userSchema.pre("save", async function (next) {
@@ -59,7 +62,6 @@ userSchema.methods.generateToken = async function () {
 userSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
-
 
 const User = new mongoose.model("users", userSchema);
 

@@ -18,6 +18,8 @@ const register = async (req, res) => {
 
     const userCreated = await User.create({ name, email, phone, password });
 
+    
+
     const token = await userCreated.generateToken();
     if (!token) {
       return res.status(500).json({ message: "Token generation failed" });
@@ -79,7 +81,7 @@ const captain = async (req, res) => {
 
 const captainRegister = async (req, res) => {
   try {
-    const { name, email, phone, password, vehicleType, vehicleNumber } =
+    const { name, email, phone, password,vehicleName, vehicleType, vehicleNumber } =
       req.body;
 
     const captainExists = await Captain.findOne({ email });
@@ -97,6 +99,7 @@ const captainRegister = async (req, res) => {
       email,
       phone,
       password,
+      vehicleName,
       vehicleType,
       vehicleNumber,
     });

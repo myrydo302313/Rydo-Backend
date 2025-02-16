@@ -1,6 +1,7 @@
 const rideModel = require("../models/ride-model");
+const captainModel = require("../models/captain-model");
 const mapService = require("./maps.service");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
 async function getFare(pickup, destination) {
@@ -80,6 +81,34 @@ module.exports.createRide = async ({
     otp: getOtp(6),
     fare: fare[vehicleType],
   });
+
+  return ride;
+};
+
+module.exports.confirmRide = async ({ rideId, captainId }) => {
+  if (!rideId) {
+    throw new Error("Ride id is required");
+  }
+
+  console.log("ye h captainId", captainId);
+
+  await rideModel.findOneAndUpdate(
+    { _id: rideId },
+    { status: "accepted", captain: captainId },
+    { new: true } 
+  );
+
+  const ride = await rideModel
+    .findOne({
+      _id: rideId,
+    })
+    .populate("user")
+    .populate("captain")
+    .select("+otp");
+
+  if (!ride) {
+    throw new Error("Ride not found");
+  }
 
   return ride;
 };
