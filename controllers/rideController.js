@@ -30,6 +30,8 @@ module.exports.createRide = async (req, res) => {
 
         const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
 
+        console.log('ye h naya',rideWithUser)
+
         captainsInRadius.map(captain => {
 
             sendMessageToSocketId(captain.socketId, {
@@ -38,6 +40,7 @@ module.exports.createRide = async (req, res) => {
             })
 
         })
+
 
     } catch (err) {
 

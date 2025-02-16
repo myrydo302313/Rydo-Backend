@@ -72,12 +72,29 @@ module.exports.createRide = async ({
     throw new Error("All fields are required");
   }
 
+  const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+  const destinationCoordinates = await mapService.getAddressCoordinate(
+    destination
+  );
+
+  if (!pickupCoordinates || !destinationCoordinates) {
+    throw new Error("Invalid address. Unable to fetch coordinates.");
+  }
+
   const fare = await getFare(pickup, destination);
 
-  const ride = rideModel.create({
+  const ride = await rideModel.create({
     user,
     pickup,
+    pickupLocation: {
+      latitude: pickupCoordinates.ltd,  // Ensure API returns `ltd` for latitude
+      longitude: pickupCoordinates.lng  // Ensure API returns `lng` for longitude
+    },
     destination,
+    destinationLocation: {
+      latitude: destinationCoordinates.ltd,
+      longitude: destinationCoordinates.lng
+    },
     otp: getOtp(6),
     fare: fare[vehicleType],
   });
@@ -95,7 +112,7 @@ module.exports.confirmRide = async ({ rideId, captainId }) => {
   await rideModel.findOneAndUpdate(
     { _id: rideId },
     { status: "accepted", captain: captainId },
-    { new: true } 
+    { new: true }
   );
 
   const ride = await rideModel
