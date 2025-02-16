@@ -1,0 +1,24 @@
+services:
+  - name: rydo-backend
+    type: web
+    env: node
+    region: oregon # Change region if needed
+    plan: free # or use 'starter' for better performance
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: JWT_SECRET_KEY
+        sync: false
+    headers:
+      - source: "/(.*)"
+        headers:
+          - key: Access-Control-Allow-Origin
+            value: "https://rydo.vercel.app"
+          - key: Access-Control-Allow-Methods
+            value: "GET, POST, OPTIONS"
+          - key: Access-Control-Allow-Headers
+            value: "Content-Type, Authorization"
