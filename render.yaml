@@ -13,12 +13,3 @@ services:
         value: 3001
       - key: JWT_SECRET_KEY
         sync: false
-    headers:
-      - source: "/(.*)"
-        headers:
-          - key: Access-Control-Allow-Origin
-            value: "https://rydo.vercel.app"
-          - key: Access-Control-Allow-Methods
-            value: "GET, POST, OPTIONS"
-          - key: Access-Control-Allow-Headers
-            value: "Content-Type, Authorization"
