@@ -28,9 +28,8 @@ const captainSchema = new mongoose.Schema({
     enum: ["active", "inactive"],
     default: "inactive",
   },
-  vehicleName:{
+  vehicleName: {
     type: String,
-
   },
   vehicleType: {
     type: String,
@@ -50,19 +49,22 @@ const captainSchema = new mongoose.Schema({
       type: Number,
     },
   },
+  fcmToken: {
+    type: String, // Stores the Firebase Cloud Messaging token
+  },
 });
 
 captainSchema.pre("save", async function (next) {
-  const captain = this;
+  const user = this;
 
-  if (!captain.isModified("password")) {
+  if (!user.isModified("password")) {
     next();
   }
 
   try {
     const saltRound = await bcrypt.genSalt(10);
-    const hash_password = await bcrypt.hash(captain.password, saltRound);
-    captain.password = hash_password;
+    const hash_password = await bcrypt.hash(user.password, saltRound);
+    user.password = hash_password;
   } catch (e) {
     next(e);
   }
@@ -72,11 +74,9 @@ captainSchema.methods.generateToken = async function () {
   try {
     return jwt.sign(
       {
-        captainId: this._id.toString(),
+        userId: this._id.toString(),
         name: this.name,
         email: this.email,
-        vehicleType: this.vehicleType,
-        vehicleNumber: this.vehicleNumber,
       },
       process.env.JWT_SECRET_KEY,
       {
@@ -92,6 +92,4 @@ captainSchema.methods.comparePassword = async function (password) {
   return bcrypt.compare(password, this.password);
 };
 
-const Captain = mongoose.model("captains", captainSchema);
-
-module.exports = Captain;
+module.exports = mongoose.model("captains", captainSchema);
