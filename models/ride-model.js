@@ -15,16 +15,16 @@ const rideSchema = new mongoose.Schema({
         required: true,
     },
     pickupLocation: {  
-        latitude: { type: Number, required: true },  // Store user's pickup latitude
-        longitude: { type: Number, required: true }  // Store user's pickup longitude
+        latitude: { type: Number, required: true },  
+        longitude: { type: Number, required: true }  
     },
     destination: {
         type: String,
         required: true,
     },
     destinationLocation: {  
-        latitude: { type: Number },  // Store destination latitude (optional)
-        longitude: { type: Number }  // Store destination longitude (optional)
+        latitude: { type: Number },  
+        longitude: { type: Number }  
     },
     fare: {
         type: Number,

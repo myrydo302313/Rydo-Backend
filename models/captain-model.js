@@ -49,9 +49,6 @@ const captainSchema = new mongoose.Schema({
       type: Number,
     },
   },
-  fcmToken: {
-    type: String, // Stores the Firebase Cloud Messaging token
-  },
 });
 
 captainSchema.pre("save", async function (next) {

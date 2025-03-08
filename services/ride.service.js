@@ -87,8 +87,8 @@ module.exports.createRide = async ({
     user,
     pickup,
     pickupLocation: {
-      latitude: pickupCoordinates.ltd,  // Ensure API returns `ltd` for latitude
-      longitude: pickupCoordinates.lng  // Ensure API returns `lng` for longitude
+      latitude: pickupCoordinates.ltd,  
+      longitude: pickupCoordinates.lng  
     },
     destination,
     destinationLocation: {
