@@ -33,7 +33,6 @@ module.exports.createRide = async (req, res) => {
       2
     );
 
-    console.log("ye h captains", captainsInRadius);
     ride.otp = "";
 
     const rideWithUser = await rideModel
@@ -46,6 +45,22 @@ module.exports.createRide = async (req, res) => {
         data: rideWithUser,
       });
     });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports.cancelRide = async (req, res) => {
+
+  const {rideId}=req.body;
+
+  try {
+    await rideModel.findOneAndUpdate(
+      { _id: rideId },
+      { status: "cancelled"},
+      { new: true }
+    );
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: err.message });
@@ -69,17 +84,19 @@ module.exports.getPendingRidesForCaptain = async (req, res) => {
     const { ltd, lng } = captain.location;
 
     // 2️⃣ Find Pending Rides Within 2 km
-    const pendingRides = await rideModel.find({
-      status: "pending",
-      "pickupLocation.latitude": {
-        $gte: ltd - 0.018,
-        $lte: ltd + 0.018,
-      },
-      "pickupLocation.longitude": {
-        $gte: lng - 0.018,
-        $lte: lng + 0.018,
-      },
-    }).populate("user", "name phone");
+    const pendingRides = await rideModel
+      .find({
+        status: "pending",
+        "pickupLocation.latitude": {
+          $gte: ltd - 0.018,
+          $lte: ltd + 0.018,
+        },
+        "pickupLocation.longitude": {
+          $gte: lng - 0.018,
+          $lte: lng + 0.018,
+        },
+      })
+      .populate("user", "name phone");
 
     return res.status(200).json(pendingRides);
   } catch (error) {
