@@ -11,6 +11,7 @@ const { initializeSocket } = require('./socket');
 const authRoute = require("./routes/authRoutes");
 const mapRoutes = require("./routes/mapRoutes");
 const rideRoutes = require("./routes/rideRoutes");
+const captainRoutes = require("./routes/captainRoutes");
 
 dotenv.config();
 const app = express();
@@ -40,6 +41,8 @@ app.use("/api/auth", authRoute);
 app.use("/api/maps", mapRoutes);
 
 app.use('/api/rides', rideRoutes);
+
+app.use('/api/captain', captainRoutes);
 
 // connectDB().then(() => {
 //   const PORT = process.env.PORT || 5000;

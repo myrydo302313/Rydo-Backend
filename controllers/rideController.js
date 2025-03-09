@@ -52,15 +52,29 @@ module.exports.createRide = async (req, res) => {
 };
 
 module.exports.cancelRide = async (req, res) => {
-
-  const {rideId}=req.body;
+  const { rideId } = req.body;
 
   try {
-    await rideModel.findOneAndUpdate(
-      { _id: rideId },
-      { status: "cancelled"},
-      { new: true }
-    );
+    // Find the ride with user details
+    const ride = await rideModel.findById(rideId).populate("user");
+
+    if (!ride) {
+      return res.status(404).json({ message: "Ride not found" });
+    }
+
+    // Update the ride status to "cancelled"
+    ride.status = "cancelled";
+    await ride.save();
+
+    // Send a socket message to the user about the cancellation
+    if (ride.user && ride.user.socketId) {
+      sendMessageToSocketId(ride.user.socketId, {
+        event: "ride-cancelled",
+        data: { rideId, message: "Your ride has been cancelled by the captain" },
+      });
+    }
+
+    return res.status(200).json({ message: "Ride cancelled successfully" });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: err.message });
