@@ -18,6 +18,6 @@ const router = express.Router();
 
 router.post("/upload-dl", authMiddleware, uploadImg.single("image"), uploadDriverLicense);
 router.post("/upload-aadhaar", authMiddleware, uploadImg.single("image"), uploadAadhaar);
-router.post("/upload-profilePhoto", authMiddleware, uploadImg.single("image"), uploadProfilePic);
+router.post("/upload-profilePic", authMiddleware, uploadImg.single("image"), uploadProfilePic);
 
 module.exports = router;
