@@ -49,6 +49,15 @@ const captainSchema = new mongoose.Schema({
       type: Number,
     },
   },
+  dl: {
+    type: String,
+  },
+  aadhaar: {
+    type: String,
+  },
+  profilePic: {
+    type: String,
+  },
 });
 
 captainSchema.pre("save", async function (next) {

@@ -4,19 +4,30 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const http = require('http');
 const connectDB = require("./config/db");
-const bcrypt = require('bcryptjs');
-const crypto = require("crypto");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
 const { initializeSocket } = require('./socket');
 
 const authRoute = require("./routes/authRoutes");
 const mapRoutes = require("./routes/mapRoutes");
 const rideRoutes = require("./routes/rideRoutes");
 const captainRoutes = require("./routes/captainRoutes");
+const documentRoutes = require("./routes/documentRoutes");
 
 dotenv.config();
 const app = express();
 
 connectDB()
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Multer setup for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 
 const corsOptions = {
@@ -44,12 +55,7 @@ app.use('/api/rides', rideRoutes);
 
 app.use('/api/captain', captainRoutes);
 
-// connectDB().then(() => {
-//   const PORT = process.env.PORT || 5000;
-//   app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-//   });
-// });
+app.use('/api/documents',documentRoutes);
 
 
 const server = http.createServer(app);
