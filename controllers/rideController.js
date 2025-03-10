@@ -17,39 +17,37 @@ module.exports.createRide = async (req, res) => {
   const { pickup, destination, vehicleType } = req.body;
 
   try {
-    const ride = await rideService.createRide({
+    // Call the ride service and get the populated ride
+    const rideWithUser = await rideService.createRide({
       user: req.userID,
       pickup,
       destination,
       vehicleType,
     });
 
+    // Send response to the user first
+    res.status(201).json(rideWithUser);
+
+    // Get pickup coordinates
     const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
 
+    // Find available captains in the radius (2km)
     const captainsInRadius = await mapService.getCaptainsInTheRadius(
       pickupCoordinates.ltd,
       pickupCoordinates.lng,
       2
     );
 
-    ride.otp = "";
-
-    const rideWithUser = await rideModel
-      .findOne({ _id: ride._id })
-      .populate("user");
-
-    // Send response before WebSocket messages
-    res.status(201).json(ride);
-
     console.log("Captains in Radius:", captainsInRadius);
 
-    // WebSocket notifications (executed after response is sent)
+    // Notify captains via WebSocket
     captainsInRadius.forEach((captain) => {
       sendMessageToSocketId(captain.socketId, {
         event: "new-ride",
         data: rideWithUser,
       });
     });
+
   } catch (err) {
     console.error("Error creating ride:", err);
 

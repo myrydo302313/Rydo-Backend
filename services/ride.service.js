@@ -101,8 +101,11 @@ module.exports.createRide = async ({
     fare: fare[vehicleType],
     distance: (distanceTime.distance.value / 1000).toFixed(2),
   });
+  
+  // Populate the user directly after creation
+  const populatedRide = await ride.populate("user");
+  return populatedRide;
 
-  return ride;
 };
 
 module.exports.confirmRide = async ({ rideId, captainId }) => {
