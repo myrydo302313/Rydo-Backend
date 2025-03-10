@@ -39,7 +39,7 @@ module.exports.createRide = async (req, res) => {
       .findOne({ _id: ride._id })
       .populate("user");
 
-    console.log('user ye h',user)
+    // console.log('user ye h',user)
 
     captainsInRadius.map((captain) => {
       sendMessageToSocketId(captain.socketId, {
