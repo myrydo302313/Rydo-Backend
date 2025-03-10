@@ -23,7 +23,6 @@ module.exports.createRide = async (req, res) => {
       destination,
       vehicleType,
     });
-    res.status(201).json(ride);
 
     const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
 
@@ -39,17 +38,25 @@ module.exports.createRide = async (req, res) => {
       .findOne({ _id: ride._id })
       .populate("user");
 
-    // console.log('user ye h',user)
+    // Send response before WebSocket messages
+    res.status(201).json(ride);
 
-    captainsInRadius.map((captain) => {
+    console.log("Captains in Radius:", captainsInRadius);
+
+    // WebSocket notifications (executed after response is sent)
+    captainsInRadius.forEach((captain) => {
       sendMessageToSocketId(captain.socketId, {
         event: "new-ride",
         data: rideWithUser,
       });
     });
   } catch (err) {
-    console.log(err);
-    return res.status(500).json({ message: err.message });
+    console.error("Error creating ride:", err);
+
+    // Ensure response is sent only once
+    if (!res.headersSent) {
+      return res.status(500).json({ message: err.message });
+    }
   }
 };
 
