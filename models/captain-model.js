@@ -44,9 +44,11 @@ const captainSchema = new mongoose.Schema({
   location: {
     ltd: {
       type: Number,
+      default: 0, // Ensures the field exists when a new captain is created
     },
     lng: {
       type: Number,
+      default: 0, // Prevents "undefined" errors when updating location
     },
   },
   dl: {
