@@ -104,63 +104,16 @@ module.exports.getCurrentLocation = async (lat, lng) => {
   }
 };
 
-module.exports.getCaptainsInTheRadius = async (lat, lng, radius) => {
-  try {
-    console.log("Finding captains near:", lat, lng, "within radius:", radius);
+module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
+  // radius in km
 
-    const earthRadius = 6371; // Earth's radius in km
-
-    const captains = await captainModel.aggregate([
-      {
-        $addFields: {
-          distance: {
-            $multiply: [
-              earthRadius,
-              {
-                $acos: {
-                  $add: [
-                    {
-                      $multiply: [
-                        {
-                          $sin: { $degreesToRadians: "$location.lat" },
-                        },
-                        { $sin: { $degreesToRadians: lat } },
-                      ],
-                    },
-                    {
-                      $multiply: [
-                        {
-                          $cos: { $degreesToRadians: "$location.lat" },
-                        },
-                        { $cos: { $degreesToRadians: lat } },
-                        {
-                          $cos: {
-                            $subtract: [
-                              { $degreesToRadians: "$location.lng" },
-                              { $degreesToRadians: lng },
-                            ],
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
+  const captains = await captainModel.find({
+    location: {
+      $geoWithin: {
+        $centerSphere: [[ltd, lng], radius / 6371],
       },
-      {
-        $match: {
-          distance: { $lte: radius }, // Only keep captains within the given radius
-        },
-      },
-    ]);
+    },
+  });
 
-    console.log("Captains Found:", captains);
-    return captains;
-  } catch (error) {
-    console.error("Error fetching captains:", error);
-    return [];
-  }
+  return captains;
 };
