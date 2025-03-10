@@ -87,11 +87,26 @@ module.exports.getCurrentLocation = async (lat, lng) => {
   }
 
   const apiKey = process.env.GOOGLE_MAPS_API;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+  const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=50&type=establishment&key=${apiKey}`;
+  const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
 
   try {
-    const response = await fetch(url);
-    const data = await response.json();
+    // 🔹 First, try Google Places API for precise location name
+    let response = await fetch(placesUrl);
+    let data = await response.json();
+
+    console.log(
+      "📌 Google Places API Response:",
+      JSON.stringify(data, null, 2)
+    );
+
+    if (data.status === "OK" && data.results.length > 0) {
+      return data.results[0]?.name || "Location not found";
+    }
+
+    // 🔹 If no nearby place, fallback to Geocoding API for a formatted address
+    response = await fetch(geocodeUrl);
+    data = await response.json();
 
     if (data.status === "OK") {
       return data.results[0]?.formatted_address || "Location not found";
@@ -102,18 +117,4 @@ module.exports.getCurrentLocation = async (lat, lng) => {
     console.error("Google API Fetch Error:", err);
     throw err;
   }
-};
-
-module.exports.getCaptainsInTheRadius = async (ltd, lng, radius) => {
-  // radius in km
-
-  const captains = await captainModel.find({
-    location: {
-      $geoWithin: {
-        $centerSphere: [[ltd, lng], radius / 6371],
-      },
-    },
-  });
-
-  return captains;
 };
