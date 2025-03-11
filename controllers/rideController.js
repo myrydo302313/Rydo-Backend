@@ -47,7 +47,6 @@ module.exports.createRide = async (req, res) => {
         data: rideWithUser,
       });
     });
-
   } catch (err) {
     console.error("Error creating ride:", err);
 
@@ -219,5 +218,21 @@ module.exports.endRide = async (req, res) => {
     return res.status(200).json(ride);
   } catch (err) {
     return res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports.isRideAccepted = async (req, res) => {
+  try {
+    const { rideId } = req.params; // Extract rideId correctly
+    const ride = await rideModel.findOne({ _id: rideId });
+
+    if (!ride) {
+      return res.status(404).json({ message: "Ride not found" });
+    }
+
+    res.json({ isAccepted: ride.status === "accepted" }); // Send response as JSON
+  } catch (error) {
+    console.error("Error in isRideAccepted:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

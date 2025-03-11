@@ -122,7 +122,7 @@ module.exports.cancelledRides = async (req, res, next) => {
     const cancelledRides = await Ride.find({
       captain: captainId,
       status: "cancelled",
-    });
+    }).populate('user');
 
     res.status(200).json(cancelledRides);
   } catch (err) {
@@ -133,12 +133,15 @@ module.exports.cancelledRides = async (req, res, next) => {
 
 module.exports.completedRides = async (req, res, next) => {
   try {
+    console.log('ye check horha')
     const captainId = req.userID;
-
+    console.log(captainId)
     const completedRides = await Ride.find({
       captain: captainId,
       status: "completed",
-    });
+    }).populate('user')
+
+    console.log('completed rides ye rha',completedRides)
 
     res.status(200).json(completedRides);
   } catch (err) {
