@@ -16,50 +16,66 @@ module.exports.availableRides = async (req, res, next) => {
       return res.status(404).json({ message: "Captain location not found" });
     }
 
-    const { ltd, lng } = captain.location;
+    const { ltd, lng } = captain.location; // Captain's location
 
-    // Convert degrees to radians for MongoDB query
     const earthRadius = 6378.1; // Earth's radius in km
     const maxDistanceKm = 2; // 2 km radius
 
-    // Find rides within 2 km
+    // Get timestamp for 5 minutes ago
+    const fiveMinutesAgo = new Date();
+    fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+
+    // Find rides within 2 km of the captain and created in the last 5 minutes
     const pendingRides = await Ride.aggregate([
       {
         $addFields: {
-          distance: {
+          captainDistance: {
             $multiply: [
               earthRadius,
               {
                 $acos: {
-                  $add: [
+                  $max: [
+                    -1,
                     {
-                      $multiply: [
+                      $min: [
                         {
-                          $sin: {
-                            $degreesToRadians: "$pickupLocation.latitude",
-                          },
+                          $add: [
+                            {
+                              $multiply: [
+                                {
+                                  $sin: {
+                                    $degreesToRadians:
+                                      "$pickupLocation.latitude",
+                                  },
+                                },
+                                { $sin: { $degreesToRadians: ltd } },
+                              ],
+                            },
+                            {
+                              $multiply: [
+                                {
+                                  $cos: {
+                                    $degreesToRadians:
+                                      "$pickupLocation.latitude",
+                                  },
+                                },
+                                { $cos: { $degreesToRadians: ltd } },
+                                {
+                                  $cos: {
+                                    $subtract: [
+                                      {
+                                        $degreesToRadians:
+                                          "$pickupLocation.longitude",
+                                      },
+                                      { $degreesToRadians: lng },
+                                    ],
+                                  },
+                                },
+                              ],
+                            },
+                          ],
                         },
-                        { $sin: { $degreesToRadians: ltd } },
-                      ],
-                    },
-                    {
-                      $multiply: [
-                        {
-                          $cos: {
-                            $degreesToRadians: "$pickupLocation.latitude",
-                          },
-                        },
-                        { $cos: { $degreesToRadians: ltd } },
-                        {
-                          $cos: {
-                            $subtract: [
-                              {
-                                $degreesToRadians: "$pickupLocation.longitude",
-                              },
-                              { $degreesToRadians: lng },
-                            ],
-                          },
-                        },
+                        1, // Ensure acos() input is in range [-1,1]
                       ],
                     },
                   ],
@@ -72,10 +88,25 @@ module.exports.availableRides = async (req, res, next) => {
       {
         $match: {
           status: "pending",
-          distance: { $lte: maxDistanceKm },
+          captainDistance: { $lte: maxDistanceKm }, // Filter rides within 2 km of captain
+          createdAt: { $gte: fiveMinutesAgo }, // Filter rides created in the last 5 mins
         },
       },
+      // Populate user using $lookup
+      {
+        $lookup: {
+          from: "users", // Name of the user collection
+          localField: "user",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails", // Convert array into an object (optional)
+      },
     ]);
+
+    console.log("Pending Rides:", pendingRides);
 
     return res.status(200).json(pendingRides);
   } catch (error) {

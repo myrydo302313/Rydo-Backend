@@ -32,7 +32,7 @@ const upload = multer({ storage });
 
 const corsOptions = {
   // origin: "http://localhost:5173",
-  origin: "https://rydo.vercel.app",
+  origin: "https://www.rydo.com",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
 };
