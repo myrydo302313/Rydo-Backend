@@ -12,38 +12,38 @@ async function getFare(pickup, destination) {
   const distanceTime = await mapService.getDistanceTime(pickup, destination);
 
   const baseFare = {
-    auto: 5,
-    car: 5,
-    moto: 5,
+    auto: 10,
+    car: 20,
+    moto: 7,
   };
 
   const perKmRate = {
-    auto: 3.13,
-    car: 6,
-    moto: 2.45,
+    auto: 25,
+    car: 40,
+    moto: 15,
   };
 
-  const perMinuteRate = {
-    auto: 2,
-    car: 3,
-    moto: 1.5,
-  };
+  // const perMinuteRate = {
+  //   auto: 2,
+  //   car: 3,
+  //   moto: 1.5,
+  // };
 
   const fare = {
     auto: Math.round(
       baseFare.auto +
         (distanceTime.distance.value / 1000) * perKmRate.auto +
-        (distanceTime.duration.value / 60) * perMinuteRate.auto
+        (distanceTime.duration.value / 60) 
     ),
     car: Math.round(
       baseFare.car +
         (distanceTime.distance.value / 1000) * perKmRate.car +
-        (distanceTime.duration.value / 60) * perMinuteRate.car
+        (distanceTime.duration.value / 60) 
     ),
     moto: Math.round(
       baseFare.moto +
         (distanceTime.distance.value / 1000) * perKmRate.moto +
-        (distanceTime.duration.value / 60) * perMinuteRate.moto
+        (distanceTime.duration.value / 60) 
     ),
   };
 
