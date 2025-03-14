@@ -31,16 +31,13 @@ async function getFare(pickup, destination) {
 
   const fare = {
     auto: Math.round(
-      baseFare.auto +
-        (distanceTime.distance.value / 1000) * perKmRate.auto 
+      baseFare.auto + (distanceTime.distance.value / 1000) * perKmRate.auto
     ),
     car: Math.round(
-      baseFare.car +
-        (distanceTime.distance.value / 1000) * perKmRate.car 
+      baseFare.car + (distanceTime.distance.value / 1000) * perKmRate.car
     ),
     moto: Math.round(
-      baseFare.moto +
-        (distanceTime.distance.value / 1000) * perKmRate.moto 
+      baseFare.moto + (distanceTime.distance.value / 1000) * perKmRate.moto
     ),
   };
 
@@ -82,7 +79,7 @@ module.exports.createRide = async ({
 
   const fare = await getFare(pickup, destination);
 
-  console.log('distance aya',distanceTime.distance.value)
+  console.log("distance aya", distanceTime.distance.value);
 
   const ride = await rideModel.create({
     user,
@@ -100,11 +97,10 @@ module.exports.createRide = async ({
     fare: fare[vehicleType],
     distance: (distanceTime.distance.value / 1000).toFixed(2),
   });
-  
+
   // Populate the user directly after creation
   const populatedRide = await ride.populate("user");
   return populatedRide;
-
 };
 
 module.exports.confirmRide = async ({ rideId, captainId }) => {
@@ -172,28 +168,38 @@ module.exports.startRide = async ({ rideId, otp, captain }) => {
 
 module.exports.endRide = async ({ rideId, captain }) => {
   if (!rideId) {
-      throw new Error('Ride id is required');
+    throw new Error("Ride id is required");
   }
 
   const ride = await rideModel.findOne({
     _id: rideId,
-    captain: captain._id
-  }).populate('user').populate('captain').select('+otp');
-  console.log('yaha aya 2',ride)
+    captain: captain._id,
+  })
+    .populate("user")
+    .populate("captain")
+    .select("+otp");
+
 
   if (!ride) {
-      throw new Error('Ride not found');
+    throw new Error("Ride not found");
   }
 
-  if (ride.status !== 'ongoing') {
-      throw new Error('Ride not ongoing');
+  if (ride.status !== "ongoing") {
+    throw new Error("Ride not ongoing");
   }
 
-  await rideModel.findOneAndUpdate({
-      _id: rideId
-  }, {
-      status: 'completed'
-  })
+  // Calculate commission (12% of fare)
+  const commission = 0.12 * ride.fare;
+
+  // Update the ride status to 'completed'
+  await rideModel.findOneAndUpdate({ _id: rideId }, { status: "completed" });
+
+  // Update the captain's commission in the Captain model
+  await captainModel.findOneAndUpdate(
+    { _id: captain._id },
+    { $inc: { commission: commission } }, // Increment existing commission
+    { new: true }
+  );
 
   return ride;
-}
+};

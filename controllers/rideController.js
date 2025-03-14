@@ -213,8 +213,6 @@ module.exports.endRide = async (req, res) => {
       data: ride,
     });
 
-    console.log("yaha aya");
-
     return res.status(200).json(ride);
   } catch (err) {
     return res.status(500).json({ message: err.message });
