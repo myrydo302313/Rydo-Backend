@@ -104,6 +104,16 @@ module.exports.availableRides = async (req, res, next) => {
       {
         $unwind: "$userDetails", // Convert array into an object (optional)
       },
+      {
+        $addFields: {
+          user: "$userDetails",
+        },
+      },
+      {
+        $project: {
+          userDetails: 0, // Remove the userDetails field
+        },
+      },
     ]);
 
     console.log("Pending Rides:", pendingRides);
