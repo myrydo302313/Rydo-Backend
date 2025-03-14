@@ -1,5 +1,6 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const Captain = require("../models/captain-model.js");
 require("dotenv").config();
 
 // Initialize Razorpay instance
@@ -14,7 +15,7 @@ exports.createOrder = async (req, res) => {
     const { amount } = req.body;
 
     const options = {
-      amount: amount * 100, // Convert amount to paise
+      amount: amount * 100, 
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     };
@@ -39,6 +40,10 @@ exports.verifyPayment = async (req, res) => {
       .digest("hex");
 
     if (generated_signature === razorpay_signature) {
+      // Update captain's commission to 0
+      const captainId = req.userID; // Assuming you have the captain's ID in the request
+      await Captain.findByIdAndUpdate(captainId, { commission: 0 });
+
       res.json({ success: true, paymentId: razorpay_payment_id });
     } else {
       res.status(400).json({ success: false, message: "Payment verification failed" });

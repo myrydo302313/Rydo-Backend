@@ -189,7 +189,7 @@ module.exports.endRide = async ({ rideId, captain }) => {
   }
 
   // Calculate commission (12% of fare)
-  const commission = 0.12 * ride.fare;
+  const commission = parseInt(Math.ceil(0.12 * ride.fare), 10);
 
   // Update the ride status to 'completed'
   await rideModel.findOneAndUpdate({ _id: rideId }, { status: "completed" });
