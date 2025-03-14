@@ -12,6 +12,7 @@ const authRoute = require("./routes/authRoutes");
 const mapRoutes = require("./routes/mapRoutes");
 const rideRoutes = require("./routes/rideRoutes");
 const captainRoutes = require("./routes/captainRoutes");
+const userRoutes = require("./routes/userRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 
@@ -55,6 +56,8 @@ app.use("/api/maps", mapRoutes);
 app.use('/api/rides', rideRoutes);
 
 app.use('/api/captain', captainRoutes);
+
+app.use('/api/user', userRoutes);
 
 app.use('/api/documents',documentRoutes);
 
