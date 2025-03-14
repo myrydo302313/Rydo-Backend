@@ -102,6 +102,7 @@ const captainRegister = async (req, res) => {
       vehicleName,
       vehicleType,
       vehicleNumber,
+      active:true
     });
 
     const token = await captainCreated.generateToken();

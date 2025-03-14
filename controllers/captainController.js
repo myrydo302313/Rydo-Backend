@@ -143,7 +143,6 @@ module.exports.cancelledRides = async (req, res, next) => {
 
 module.exports.completedRides = async (req, res, next) => {
   try {
-    console.log('ye check horha')
     const captainId = req.userID;
     console.log(captainId)
     const completedRides = await Ride.find({
@@ -154,6 +153,83 @@ module.exports.completedRides = async (req, res, next) => {
     console.log('completed rides ye rha',completedRides)
 
     res.status(200).json(completedRides);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.totalEarnings = async (req, res, next) => {
+  try {
+    const captainId = req.userID;
+    console.log("Captain ID:", captainId);
+
+    // Find all completed rides of the captain
+    const completedRides = await Ride.find({
+      captain: captainId,
+      status: "completed",
+    });
+
+    const totalEarnings = completedRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+
+    console.log("Total Earnings:", totalEarnings);
+
+    res.status(200).json({ totalEarnings });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.totalCommission = async (req, res, next) => {
+  try {
+    const captainId = req.userID;
+    console.log("Captain ID:", captainId);
+
+    // Find all completed rides of the captain
+    const completedRides = await Ride.find({
+      captain: captainId,
+      status: "completed",
+    });
+
+    const totalEarnings = completedRides.reduce((sum, ride) => sum + (ride.fare || 0), 0);
+
+    console.log("Total Earnings:", totalEarnings);
+
+    totalCommission=Math.ceil(totalEarnings*0.12);
+    res.status(200).json({ totalCommission });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.completedRidesCount = async (req, res) => {
+  try {
+    const captainId = req.userID; 
+    
+    const completedRidesCount = await Ride.countDocuments({
+      captain: captainId,
+      status: "completed",
+    });
+
+    res.status(200).json({ completedRidesCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.totalDistance = async (req, res) => {
+  try {
+    const captainId = req.userID; // Assuming captain's ID is retrieved from `req.userID`
+    
+    const totalDistance = await Ride.aggregate([
+      { $match: { captain: captainId, status: "completed" } }, // Filter completed rides
+      { $group: { _id: null, totalDistance: { $sum: "$distance" } } } // Sum up the distance field
+    ]);
+
+    res.status(200).json({ totalDistance: totalDistance[0]?.totalDistance || 0 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

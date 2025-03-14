@@ -41,6 +41,18 @@ const captainSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  totalEarning: {
+    type: Number,
+  },
+  earning: {
+    type: Number,
+  },
+  commission: {
+    type: Number,
+  },
+  active:{
+    type:Boolean
+  },
   location: {
     ltd: {
       type: Number,
