@@ -65,3 +65,16 @@ module.exports.getCaptains = async (req, res) => {
   }
 };
 
+module.exports.getRides = async (req, res) => {
+  try {
+    // Fetch the total number of users
+    const rides = await Ride.find().populate("user").populate("captain"); 
+
+    // Send the count as a response
+    return res.status(200).json(rides);
+  } catch (error) {
+    console.error("Error fetching rides:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
