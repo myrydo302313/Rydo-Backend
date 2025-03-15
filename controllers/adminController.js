@@ -52,3 +52,16 @@ module.exports.getUsers = async (req, res) => {
   }
 };
 
+module.exports.getCaptains = async (req, res) => {
+  try {
+    // Fetch the total number of users
+    const users = await Captain.find();
+
+    // Send the count as a response
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
