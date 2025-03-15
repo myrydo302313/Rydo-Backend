@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
   },
+  completedRides: {
+    type: Number,
+    default: 0,
+  },
   socketId: {
     type: String,
   },

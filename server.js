@@ -9,6 +9,7 @@ const cloudinary = require("cloudinary").v2;
 const { initializeSocket } = require('./socket');
 
 const authRoute = require("./routes/authRoutes");
+const adminRoute = require("./routes/adminRoutes");
 const mapRoutes = require("./routes/mapRoutes");
 const rideRoutes = require("./routes/rideRoutes");
 const captainRoutes = require("./routes/captainRoutes");
@@ -50,6 +51,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoute);
+
+app.use("/api/admin", adminRoute);
 
 app.use("/api/maps", mapRoutes);
 

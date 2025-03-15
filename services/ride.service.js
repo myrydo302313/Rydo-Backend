@@ -1,5 +1,6 @@
 const rideModel = require("../models/ride-model");
 const captainModel = require("../models/captain-model");
+const userModel = require("../models/user-model");
 const mapService = require("./maps.service");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -171,18 +172,23 @@ module.exports.endRide = async ({ rideId, captain }) => {
     throw new Error("Ride id is required");
   }
 
-  const ride = await rideModel.findOne({
-    _id: rideId,
-    captain: captain._id,
-  })
+  const ride = await rideModel
+    .findOne({
+      _id: rideId,
+      captain: captain._id,
+    })
     .populate("user")
     .populate("captain")
     .select("+otp");
+
+    console.log('htt',ride)
+    console.log('ye le id',ride.user._id)
 
 
   if (!ride) {
     throw new Error("Ride not found");
   }
+  console.log('ye h user',ride.user)
 
   if (ride.status !== "ongoing") {
     throw new Error("Ride not ongoing");
@@ -191,8 +197,17 @@ module.exports.endRide = async ({ rideId, captain }) => {
   // Calculate commission (12% of fare)
   const commission = parseInt(Math.ceil(0.12 * ride.fare), 10);
 
-  // Update the ride status to 'completed'
   await rideModel.findOneAndUpdate({ _id: rideId }, { status: "completed" });
+
+  const updatedUser = await userModel.findOneAndUpdate(
+    { _id: ride.user._id },
+    { $inc: { completedRides: 1 } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    throw new Error("Failed to update user's completed rides count");
+  }
 
   // Update the captain's commission in the Captain model
   await captainModel.findOneAndUpdate(
