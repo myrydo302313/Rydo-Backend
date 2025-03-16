@@ -25,6 +25,7 @@ router.post(
 );
 
 router.post("/cancel-ride", authMiddleware, rideController.cancelRide);
+router.post("/cancel-ride-user", authMiddleware, rideController.cancelRideUser);
 
 router.get(
   "/get-fare",

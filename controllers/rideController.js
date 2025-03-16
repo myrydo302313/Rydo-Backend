@@ -90,6 +90,41 @@ module.exports.cancelRide = async (req, res) => {
   }
 };
 
+module.exports.cancelRideUser = async (req, res) => {
+  const { rideId } = req.body;
+
+
+  console.log(rideId);
+  try {
+    // Find the ride with user details
+    const ride = await rideModel.findById(rideId).populate("user").populate("captain");
+
+    if (!ride) {
+      return res.status(404).json({ message: "Ride not found" });
+    }
+
+    // Update the ride status to "cancelled"
+    ride.status = "cancelled";
+    await ride.save();
+
+    // Send a socket message to the user about the cancellation
+    if (ride.captain && ride.captain.socketId) {
+      sendMessageToSocketId(ride.captain.socketId, {
+        event: "ride-cancelled",
+        data: {
+          rideId,
+          message: "The ride has been cancelled by the user",
+        },
+      });
+    }
+
+    return res.status(200).json({ message: "Ride cancelled successfully" });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports.getPendingRidesForCaptain = async (req, res) => {
   try {
     const captainId = req.query.captainId;
