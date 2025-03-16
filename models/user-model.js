@@ -30,13 +30,21 @@ const userSchema = new mongoose.Schema({
   socketId: {
     type: String,
   },
+  resetPasswordToken: {
+    type: String,
+    select: false,
+  },
+  resetPasswordExpires: {
+    type: Date,
+    select: false,
+  },
 });
 
 userSchema.pre("save", async function (next) {
   const user = this;
 
-  if (!user.isModified("password")) {
-    next();
+  if (!this.isModified("password") || this.password.startsWith("$2a$")) {
+    return next();
   }
 
   try {
@@ -67,6 +75,11 @@ userSchema.methods.generateToken = async function () {
 };
 
 userSchema.methods.comparePassword = async function (password) {
+  console.log("Comparing password:", password);
+  console.log("Comparing password:", this.password);
+
+  console.log("Comparing password:", await bcrypt.compare(password, this.password));
+
   return bcrypt.compare(password, this.password);
 };
 

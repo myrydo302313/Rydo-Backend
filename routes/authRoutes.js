@@ -8,6 +8,8 @@ const {
   captainRegister,
   captainLogin,
   captain,
+  requestPasswordReset,
+  resetPassword,
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middlewares/auth-middleware");
@@ -16,6 +18,8 @@ const authMiddleware = require("../middlewares/auth-middleware");
 router.get("/user", authMiddleware, user);
 router.post("/register", register);
 router.post("/login", login);
+router.post("/request-password-reset", requestPasswordReset);
+router.post("/reset-password", resetPassword);
 
 // Captain Routes
 router.get("/captain", authMiddleware, captain);
