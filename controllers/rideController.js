@@ -8,13 +8,6 @@ const Captain = require("../models/captain-model");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
-const admin = require("firebase-admin");
-
-// Initialize Firebase Admin SDK
-const serviceAccount = require("../config/firebase_service_account.json"); // Download from Firebase
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
 
 module.exports.createRide = async (req, res) => {
   const errors = validationResult(req);
@@ -25,7 +18,7 @@ module.exports.createRide = async (req, res) => {
   const { pickup, destination, vehicleType } = req.body;
 
   try {
-    // ✅ Step 1: Create a new ride
+    // Create a new ride
     const rideWithUser = await rideService.createRide({
       user: req.userID,
       pickup,
@@ -33,10 +26,10 @@ module.exports.createRide = async (req, res) => {
       vehicleType,
     });
 
-    // ✅ Step 2: Send response early to avoid delays
+    // Send response first
     res.status(201).json(rideWithUser);
 
-    // ✅ Step 3: Find available captains in the radius (2km)
+    // Find available captains in the radius (2km)
     const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
     const captainsInRadius = await mapService.getCaptainsInTheRadius(
       pickupCoordinates.ltd,
@@ -44,9 +37,9 @@ module.exports.createRide = async (req, res) => {
       2
     );
 
-    console.log("🚗 Captains in Radius:", captainsInRadius);
+    console.log("Captains in Radius:", captainsInRadius);
 
-    // ✅ Step 4: Notify captains via WebSocket
+    // Notify captains via WebSocket
     captainsInRadius.forEach((captain) => {
       sendMessageToSocketId(captain.socketId, {
         event: "new-ride",
@@ -54,60 +47,46 @@ module.exports.createRide = async (req, res) => {
       });
     });
 
-    // ✅ Step 5: Send Push Notifications using FCM
-    const tokens = captainsInRadius
-      .map((captain) => captain.fcmToken)
-      .filter(Boolean); // Ensure no null tokens
+    // Send Push Notifications using FCM for Web
+    const tokens = captainsInRadius.map(captain => captain.fcmToken); // Assume captains have FCM tokens stored
 
     if (tokens.length > 0) {
       const message = {
         notification: {
-          title: "🚖 New Ride Request!",
-          body: `📍 Pickup: ${pickup} → 🏁 Destination: ${destination}`,
+          title: "New Ride Request!",
+          body: `Pickup: ${pickup} → Destination: ${destination}`,
+          click_action: "https://your-website.com/dashboard", // URL to open on click
         },
         webpush: {
           headers: {
             urgency: "high",
           },
           notification: {
-            title: "🚖 New Ride Available!",
-            body: `📍 Pickup: ${pickup} → 🏁 Destination: ${destination}`,
+            title: "New Ride Available",
+            body: `Pickup: ${pickup} → Destination: ${destination}`,
             icon: "https://your-website.com/icons/ride.png",
-          },
-          fcmOptions: {
-            // ✅ Correct way to handle click actions
-            link: "https://your-website.com/dashboard",
+            click_action: "https://your-website.com/dashboard",
           },
         },
-        tokens: tokens, // ✅ Send to multiple devices
+        tokens: tokens, // Array of FCM tokens
       };
 
-      admin
-        .messaging()
-        .sendEachForMulticast(message)
+      admin.messaging().sendMulticast(message)
         .then((response) => {
-          console.log("✅ FCM Web Notification Sent Successfully:", response);
-
-          response.responses.forEach((resp, index) => {
-            if (!resp.success) {
-              console.error(
-                `❌ Error sending to token ${tokens[index]}:`,
-                resp.error
-              );
-            }
-          });
+          console.log("FCM Web Notification Sent Successfully:", response);
         })
         .catch((error) => {
-          console.error("❌ Error sending FCM notification:", error);
+          console.error("Error sending FCM notification:", error);
         });
     }
   } catch (err) {
-    console.error("❌ Error creating ride:", err);
+    console.error("Error creating ride:", err);
     if (!res.headersSent) {
       return res.status(500).json({ message: err.message });
     }
   }
 };
+
 
 module.exports.cancelRide = async (req, res) => {
   const { rideId } = req.body;
@@ -147,10 +126,7 @@ module.exports.cancelRideUser = async (req, res) => {
 
   try {
     // Find the ride with user details
-    const ride = await rideModel
-      .findById(rideId)
-      .populate("user")
-      .populate("captain");
+    const ride = await rideModel.findById(rideId).populate("user").populate("captain");
 
     if (!ride) {
       return res.status(404).json({ message: "Ride not found" });
