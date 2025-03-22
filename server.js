@@ -16,7 +16,6 @@ const captainRoutes = require("./routes/captainRoutes");
 const userRoutes = require("./routes/userRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
-const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 const app = express();
