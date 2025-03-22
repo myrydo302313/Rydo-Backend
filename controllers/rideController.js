@@ -8,6 +8,14 @@ const Captain = require("../models/captain-model");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
+const admin = require("firebase-admin");
+
+// Initialize Firebase Admin SDK
+const serviceAccount = require("../config/firebase_service_account.json"); // Download from Firebase
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
 module.exports.createRide = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -17,7 +25,7 @@ module.exports.createRide = async (req, res) => {
   const { pickup, destination, vehicleType } = req.body;
 
   try {
-    // Call the ride service and get the populated ride
+    // ✅ Step 1: Create a new ride
     const rideWithUser = await rideService.createRide({
       user: req.userID,
       pickup,
@@ -25,32 +33,76 @@ module.exports.createRide = async (req, res) => {
       vehicleType,
     });
 
-    // Send response to the user first
+    // ✅ Step 2: Send response early to avoid delays
     res.status(201).json(rideWithUser);
 
-    // Get pickup coordinates
+    // ✅ Step 3: Find available captains in the radius (2km)
     const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
-
-    // Find available captains in the radius (2km)
     const captainsInRadius = await mapService.getCaptainsInTheRadius(
       pickupCoordinates.ltd,
       pickupCoordinates.lng,
       2
     );
 
-    console.log("Captains in Radius:", captainsInRadius);
+    console.log("🚗 Captains in Radius:", captainsInRadius);
 
-    // Notify captains via WebSocket
+    // ✅ Step 4: Notify captains via WebSocket
     captainsInRadius.forEach((captain) => {
       sendMessageToSocketId(captain.socketId, {
         event: "new-ride",
         data: rideWithUser,
       });
     });
-  } catch (err) {
-    console.error("Error creating ride:", err);
 
-    // Ensure response is sent only once
+    // ✅ Step 5: Send Push Notifications using FCM
+    const tokens = captainsInRadius
+      .map((captain) => captain.fcmToken)
+      .filter(Boolean); // Ensure no null tokens
+
+    if (tokens.length > 0) {
+      const message = {
+        notification: {
+          title: "🚖 New Ride Request!",
+          body: `📍 Pickup: ${pickup} → 🏁 Destination: ${destination}`,
+        },
+        webpush: {
+          headers: {
+            urgency: "high",
+          },
+          notification: {
+            title: "🚖 New Ride Available!",
+            body: `📍 Pickup: ${pickup} → 🏁 Destination: ${destination}`,
+            icon: "https://your-website.com/icons/ride.png",
+          },
+          fcmOptions: {
+            // ✅ Correct way to handle click actions
+            link: "https://your-website.com/dashboard",
+          },
+        },
+        tokens: tokens, // ✅ Send to multiple devices
+      };
+
+      admin
+        .messaging()
+        .sendEachForMulticast(message)
+        .then((response) => {
+          console.log("✅ FCM Web Notification Sent Successfully:", response);
+
+          response.responses.forEach((resp, index) => {
+            if (!resp.success) {
+              console.error(
+                `❌ Error sending to token ${tokens[index]}:`,
+                resp.error
+              );
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("❌ Error sending FCM notification:", error);
+        });
+    }
+  } catch (err) {
+    console.error("❌ Error creating ride:", err);
     if (!res.headersSent) {
       return res.status(500).json({ message: err.message });
     }
@@ -93,11 +145,12 @@ module.exports.cancelRide = async (req, res) => {
 module.exports.cancelRideUser = async (req, res) => {
   const { rideId } = req.body;
 
-
-  console.log(rideId);
   try {
     // Find the ride with user details
-    const ride = await rideModel.findById(rideId).populate("user").populate("captain");
+    const ride = await rideModel
+      .findById(rideId)
+      .populate("user")
+      .populate("captain");
 
     if (!ride) {
       return res.status(404).json({ message: "Ride not found" });

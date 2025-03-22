@@ -70,6 +70,7 @@ const captainSchema = new mongoose.Schema({
   profilePic: {
     type: String,
   },
+  fcmToken: { type: String },
 });
 
 captainSchema.pre("save", async function (next) {

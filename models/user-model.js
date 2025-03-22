@@ -30,6 +30,9 @@ const userSchema = new mongoose.Schema({
   socketId: {
     type: String,
   },
+  fcmToken: {
+    type: String,
+  },
   resetPasswordToken: {
     type: String,
     select: false,

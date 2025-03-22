@@ -80,8 +80,6 @@ module.exports.createRide = async ({
 
   const fare = await getFare(pickup, destination);
 
-  console.log("distance aya", distanceTime.distance.value);
-
   const ride = await rideModel.create({
     user,
     pickup,

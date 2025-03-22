@@ -2,11 +2,11 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const http = require('http');
+const http = require("http");
 const connectDB = require("./config/db");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
-const { initializeSocket } = require('./socket');
+const { initializeSocket } = require("./socket");
 
 const authRoute = require("./routes/authRoutes");
 const adminRoute = require("./routes/adminRoutes");
@@ -16,11 +16,12 @@ const captainRoutes = require("./routes/captainRoutes");
 const userRoutes = require("./routes/userRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 const app = express();
 
-connectDB()
+connectDB();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -31,7 +32,6 @@ cloudinary.config({
 // Multer setup for memory storage
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-
 
 const corsOptions = {
   // origin: "http://localhost:5173",
@@ -56,15 +56,17 @@ app.use("/api/admin", adminRoute);
 
 app.use("/api/maps", mapRoutes);
 
-app.use('/api/rides', rideRoutes);
+app.use("/api/rides", rideRoutes);
 
-app.use('/api/captain', captainRoutes);
+app.use("/api/captain", captainRoutes);
 
-app.use('/api/user', userRoutes);
+app.use("/api/user", userRoutes);
 
-app.use('/api/documents',documentRoutes);
+app.use("/api/documents", documentRoutes);
 
-app.use("/api/payments", paymentRoutes); 
+app.use("/api/payments", paymentRoutes);
+
+app.use("/api/notification", notificationRoutes);
 
 
 const server = http.createServer(app);
@@ -73,5 +75,5 @@ initializeSocket(server);
 // Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-    console.log(`Server is running on port : ${PORT}`);
+  console.log(`Server is running on port : ${PORT}`);
 });
