@@ -66,8 +66,6 @@ app.use("/api/documents", documentRoutes);
 
 app.use("/api/payments", paymentRoutes);
 
-app.use("/api/notification", notificationRoutes);
-
 
 const server = http.createServer(app);
 initializeSocket(server);
