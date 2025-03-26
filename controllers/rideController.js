@@ -8,7 +8,6 @@ const Captain = require("../models/captain-model");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 
-
 module.exports.createRide = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -18,7 +17,7 @@ module.exports.createRide = async (req, res) => {
   const { pickup, destination, vehicleType } = req.body;
 
   try {
-    // Create a new ride
+    // Call the ride service and get the populated ride
     const rideWithUser = await rideService.createRide({
       user: req.userID,
       pickup,
@@ -26,11 +25,13 @@ module.exports.createRide = async (req, res) => {
       vehicleType,
     });
 
-    // Send response first
+    // Send response to the user first
     res.status(201).json(rideWithUser);
 
-    // Find available captains in the radius (2km)
+    // Get pickup coordinates
     const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+
+    // Find available captains in the radius (2km)
     const captainsInRadius = await mapService.getCaptainsInTheRadius(
       pickupCoordinates.ltd,
       pickupCoordinates.lng,
@@ -46,47 +47,15 @@ module.exports.createRide = async (req, res) => {
         data: rideWithUser,
       });
     });
-
-    // Send Push Notifications using FCM for Web
-    const tokens = captainsInRadius.map(captain => captain.fcmToken); // Assume captains have FCM tokens stored
-
-    if (tokens.length > 0) {
-      const message = {
-        notification: {
-          title: "New Ride Request!",
-          body: `Pickup: ${pickup} → Destination: ${destination}`,
-          click_action: "https://your-website.com/dashboard", // URL to open on click
-        },
-        webpush: {
-          headers: {
-            urgency: "high",
-          },
-          notification: {
-            title: "New Ride Available",
-            body: `Pickup: ${pickup} → Destination: ${destination}`,
-            icon: "https://your-website.com/icons/ride.png",
-            click_action: "https://your-website.com/dashboard",
-          },
-        },
-        tokens: tokens, // Array of FCM tokens
-      };
-
-      admin.messaging().sendMulticast(message)
-        .then((response) => {
-          console.log("FCM Web Notification Sent Successfully:", response);
-        })
-        .catch((error) => {
-          console.error("Error sending FCM notification:", error);
-        });
-    }
   } catch (err) {
     console.error("Error creating ride:", err);
+
+    // Ensure response is sent only once
     if (!res.headersSent) {
       return res.status(500).json({ message: err.message });
     }
   }
 };
-
 
 module.exports.cancelRide = async (req, res) => {
   const { rideId } = req.body;
