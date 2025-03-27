@@ -16,6 +16,7 @@ const captainRoutes = require("./routes/captainRoutes");
 const userRoutes = require("./routes/userRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 const app = express();
@@ -64,6 +65,8 @@ app.use("/api/user", userRoutes);
 app.use("/api/documents", documentRoutes);
 
 app.use("/api/payments", paymentRoutes);
+
+app.use("/api/notifications", notificationRoutes);
 
 
 const server = http.createServer(app);

@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false,
   },
+  fcmToken: { type: String },
 });
 
 userSchema.pre("save", async function (next) {

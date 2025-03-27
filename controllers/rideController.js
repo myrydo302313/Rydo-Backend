@@ -7,6 +7,22 @@ const userModel = require("../models/user-model");
 const Captain = require("../models/captain-model");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const admin = require("firebase-admin");
+require("dotenv").config();
+const {
+  getCaptainsFcmTokens,
+  sendPushNotification,
+} = require("../services/notificationServices");
+
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(
+    Buffer.from(process.env.FIREBASE_CREDENTIALS, "base64").toString("utf-8")
+  );
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 module.exports.createRide = async (req, res) => {
   const errors = validationResult(req);
@@ -47,10 +63,39 @@ module.exports.createRide = async (req, res) => {
         data: rideWithUser,
       });
     });
+
+    // 🔥 Fetch FCM Tokens of Nearby Captains
+    const captainIds = captainsInRadius.map((c) => c._id);
+    const fcmTokens = await getCaptainsFcmTokens(captainIds);
+
+    console.log("🚀 Sending FCM Notifications to Captains:", fcmTokens);
+
+    // 🔥 Send FCM Push Notification
+    if (fcmTokens.length > 0) {
+      const payload = {
+        data: {
+          title: "🚖 New Ride Available!",
+          body: `Pickup: ${pickup}, Destination: ${destination}`,
+          rideId: String(rideWithUser._id), // ✅ Ensure it's a string
+          pickup: String(pickup),
+          destination: String(destination),
+          vehicleType: String(vehicleType),
+          icon: "/images/rydoLogo3.png", // ✅ Add icon in data
+          sound: "default",
+        },
+      };
+
+      // Send the notification
+      await sendPushNotification(
+        fcmTokens,
+        payload.data.title,
+        payload.data.body,
+        payload.data.icon,
+        payload.data
+      );
+    }
   } catch (err) {
     console.error("Error creating ride:", err);
-
-    // Ensure response is sent only once
     if (!res.headersSent) {
       return res.status(500).json({ message: err.message });
     }
@@ -95,7 +140,10 @@ module.exports.cancelRideUser = async (req, res) => {
 
   try {
     // Find the ride with user details
-    const ride = await rideModel.findById(rideId).populate("user").populate("captain");
+    const ride = await rideModel
+      .findById(rideId)
+      .populate("user")
+      .populate("captain");
 
     if (!ride) {
       return res.status(404).json({ message: "Ride not found" });
